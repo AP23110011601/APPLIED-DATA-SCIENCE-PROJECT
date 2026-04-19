@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}AQI Air Quality Predictor - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold text-white mb-4">
+                        <i class="fas fa-wind me-3"></i>
+                        AQI Air Quality Predictor
+                    </h1>
+                    <p class="lead text-white mb-4">
+                        Get real-time air quality predictions using advanced Machine Learning technology. 
+                        Make informed decisions about your outdoor activities based on accurate AQI forecasts.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{{ url_for('signup') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-illustration">
+                    <div class="card bg-white bg-opacity-10 border-0">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-5x text-white mb-3"></i>
+                            <h3 class="text-white">Smart Predictions</h3>
+                            <p class="text-white-50">Powered by Random Forest ML Model</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About AQI Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-5">
+                <h2 class="display-5 fw-bold">What is AQI?</h2>
+                <p class="lead text-muted">Air Quality Index explained simply</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-success fs-2 p-3 rounded-circle">0-50</span>
+                        </div>
+                        <h5 class="card-title">Good</h5>
+                        <p class="card-text text-muted">Air quality is satisfactory with little or no risk.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-warning fs-2 p-3 rounded-circle">51-100</span>
+                        </div>
+                        <h5 class="card-title">Moderate</h5>
+                        <p class="card-text text-muted">Acceptable for most people, sensitive individuals may experience minor issues.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-orange fs-2 p-3 rounded-circle">101-150</span>
+                        </div>
+                        <h5 class="card-title">Unhealthy for Sensitive Groups</h5>
+                        <p class="card-text text-muted">Sensitive groups may experience health effects.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-danger fs-2 p-3 rounded-circle">151+</span>
+                        </div>
+                        <h5 class="card-title">Unhealthy</h5>
+                        <p class="card-text text-muted">Everyone may experience health effects.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-5">
+                <h2 class="display-5 fw-bold">Features</h2>
+                <p class="lead text-muted">Everything you need for air quality monitoring</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">ML-Powered Predictions</h5>
+                        <p class="card-text">Advanced Random Forest algorithm provides accurate air quality predictions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Analytics Dashboard</h5>
+                        <p class="card-text">Visualize your air quality data with interactive charts and insights.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Health Recommendations</h5>
+                        <p class="card-text">Get personalized health advice based on current air quality conditions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-history fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Prediction History</h5>
+                        <p class="card-text">Track all your past predictions and monitor trends over time.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Secure & Private</h5>
+                        <p class="card-text">Your data is encrypted and protected with industry-standard security.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-mobile-alt fa-3x text-secondary mb-3"></i>
+                        <h5 class="card-title">Mobile Friendly</h5>
+                        <p class="card-text">Access your predictions and analytics from any device, anywhere.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h2 class="display-6 fw-bold mb-4">Ready to Take Control of Your Air Quality?</h2>
+                <p class="lead mb-4">Join thousands of users making informed decisions about their health.</p>
+                <a href="{{ url_for('signup') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Start Predicting Now
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Health Recommendations - AQI Predictor{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Health Recommendations
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-0">Personalized Health Advice</h5>
+                            <p class="mb-0 text-muted">Get recommendations based on your latest AQI predictions</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            {% if current_epa_category %}
+                                <span class="badge bg-info fs-6 p-2">
+                                    Current: {{ current_epa_category }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6 p-2">
+                                    No Data
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personalized Recommendation -->
+    {% if current_epa_category %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-light text-success">
+                    <h5 class="mb-0">
+                        Your Personalized Recommendation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <div class="epa-badge {% if current_epa_category == 'Good' %}good{% elif current_epa_category == 'Moderate' %}moderate{% elif 'Unhealthy for Sensitive Groups' in current_epa_category %}sensitive{% elif 'Unhealthy' in current_epa_category %}unhealthy{% elif 'Very Unhealthy' in current_epa_category %}very-unhealthy{% else %}hazardous{% endif %}">
+                                {{ current_epa_category[:8] }}
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h6 class="text-success mb-2">Based on your latest prediction:</h6>
+                            <p class="mb-0">{{ personalized_recommendations }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-light text-warning">
+                    <h5 class="mb-0">
+                        No Prediction Data
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">{{ personalized_recommendations }}</p>
+                    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                        Make a Prediction
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- General Recommendations by EPA Category -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        General Health Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for category, recommendations in general_recommendations.items() %}
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card h-100 recommendation-card {% if category == 'Good' %}border-success{% elif category == 'Moderate' %}border-warning{% elif 'Unhealthy for Sensitive Groups' in category %}border-orange{% elif 'Unhealthy' in category %}border-danger{% elif 'Very Unhealthy' in category %}border-purple{% else %}border-dark{% endif %}">
+                                <div class="card-header {% if category == 'Good' %}bg-success text-white{% elif category == 'Moderate' %}bg-warning text-dark{% elif 'Unhealthy for Sensitive Groups' in category %}bg-orange text-white{% elif 'Unhealthy' in category %}bg-danger text-white{% elif 'Very Unhealthy' in category %}bg-purple text-white{% else %}bg-dark text-white{% endif %}">
+                                    <h6 class="mb-0">{{ category }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="small mb-0">
+                                        {% for recommendation in recommendations %}
+                                        <li class="mb-1">{{ recommendation }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Tips Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        General Health Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-home fa-2x text-primary mb-2"></i>
+                                    <h6>Indoor Air Quality</h6>
+                                    <p class="small text-muted mb-0">Keep windows closed during high pollution days. Use air purifiers and maintain proper ventilation.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-running fa-2x text-success mb-2"></i>
+                                    <h6>Exercise Guidelines</h6>
+                                    <p class="small text-muted mb-0">Move outdoor activities to early morning or late evening when pollution levels are typically lower.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-warning">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-mask fa-2x text-warning mb-2"></i>
+                                    <h6>Protection Measures</h6>
+                                    <p class="small text-muted mb-0">Consider wearing N95 masks on poor air quality days, especially if you have respiratory conditions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-danger">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-child fa-2x text-danger mb-2"></i>
+                                    <h6>Vulnerable Groups</h6>
+                                    <p class="small text-muted mb-0">Children, elderly, and people with health conditions should take extra precautions during poor air quality.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Contacts -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        Emergency Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-danger">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-hospital fa-2x text-danger mb-2"></i>
+                                    <h6>Medical Emergency</h6>
+                                    <p class="mb-0"><strong>Call 911</strong> for severe breathing difficulties or chest pain</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-info-circle fa-2x text-info mb-2"></i>
+                                    <h6>Air Quality Info</h6>
+                                    <p class="mb-0">Check local air quality reports and forecasts regularly</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left border-4 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-md fa-2x text-primary mb-2"></i>
+                                    <h6>Health Consultation</h6>
+                                    <p class="mb-0">Consult your doctor for personalized health advice</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add animation to recommendation cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.recommendation-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Add hover effects to health tip cards
+    const tipCards = document.querySelectorAll('.card-body .d-flex');
+    tipCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+
+// Function to print recommendations
+function printRecommendations() {
+    window.print();
+}
+
+// Add print button (dynamically)
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.querySelector('.card-header h4');
+    if (header) {
+        const printBtn = document.createElement('button');
+        printBtn.className = 'btn btn-light btn-sm ms-2';
+        printBtn.innerHTML = '<i class="fas fa-print me-1"></i>Print';
+        printBtn.onclick = printRecommendations;
+        header.parentElement.appendChild(printBtn);
+    }
+});
+</script>
+{% endblock %}

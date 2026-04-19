@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="main-container">
+
+    <!-- Header -->
+    <div class="card header-card mb-4">
+        <div class="card-body">
+            <h3 class="fw-bold mb-1">AQI Analytics Dashboard</h3>
+            <p class="text-muted mb-0">Overview of your prediction data</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="card stat-card text-center">
+                <h3>{{ total_predictions }}</h3>
+                <p>Total Predictions</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card text-center">
+                <h3 class="text-success">{{ prediction_counts['Good'] }}</h3>
+                <p>Good Predictions</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card text-center">
+                <h3 class="text-danger">{{ prediction_counts['Not Good'] }}</h3>
+                <p>Not Good Predictions</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card text-center">
+                <h3>{{ epa_counts|length }}</h3>
+                <p>EPA Categories</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">EPA Category Distribution</h5>
+                    <canvas id="epaChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">Prediction Type Distribution</h5>
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Monthly Trends Chart -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Monthly Prediction Trends</h5>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Bottom Details Section -->
+    <div class="row g-4">
+
+        <!-- EPA Categories List -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-3">EPA Categories Summary</h6>
+
+                    {% for category, count in epa_counts.items() %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ category }}</span>
+                        <span class="badge bg-secondary">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Activity Breakdown -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-3">Monthly Activity Breakdown</h6>
+
+                    {% for month, count in monthly_counts.items() %}
+                    <div class="mb-2">
+                        <small>{{ month }}</small>
+                        <div class="progress small-progress">
+                            <div class="progress-bar" style="width: {{ (count / monthly_counts.values() | max * 100) if monthly_counts.values() | max > 0 else 0 }}%">
+                                {{ count }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Good Air Quality Rate -->
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="mb-3">Good Air Quality Rate</h6>
+
+                    <h2 class="fw-bold text-success">
+                        {{ "%.1f"|format((prediction_counts['Good'] / total_predictions * 100)) if total_predictions > 0 else 0 }}%
+                    </h2>
+
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-success"
+                             style="width: {{ (prediction_counts['Good'] / total_predictions * 100) if total_predictions > 0 else 0 }}%">
+                        </div>
+                    </div>
+
+                    <p class="text-muted mt-2">Percentage of good air quality predictions</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

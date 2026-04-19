@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History - AQI Predictor{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-0">
+                                <i class="fas fa-history me-2"></i>Your Predictions
+                            </h4>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button class="btn btn-light btn-sm" onclick="exportHistory()">
+                                <i class="fas fa-download me-1"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-primary">{{ predictions.total }}</h5>
+                                <small class="text-muted">Total Predictions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-success">{{ predictions.page }}/{{ predictions.pages }}</h5>
+                                <small class="text-muted">Current Page</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-info">{{ predictions.per_page }}</h5>
+                                <small class="text-muted">Per Page</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h5 class="text-warning">{{ predictions.has_next }}</h5>
+                                <small class="text-muted">Has Next</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Predictions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Your Predictions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if predictions.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="predictionsTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>AQI</th>
+                                        <th>Month</th>
+                                        <th>State</th>
+                                        <th>Parameter</th>
+                                        <th>Season</th>
+                                        <th>Prediction</th>
+                                        <th>Confidence</th>
+                                        <th>EPA Category</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prediction in predictions.items %}
+                                    <tr>
+                                        <td>{{ format_datetime(prediction.timestamp) }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ prediction.aqi }}</span>
+                                        </td>
+                                        <td>{{ prediction.timestamp.strftime('%B') }}</td>
+                                        <td>{{ prediction.state }}</td>
+                                        <td>{{ prediction.parameter }}</td>
+                                        <td>{{ prediction.season }}</td>
+                                        <td>
+                                            <span class="badge {% if prediction.prediction == 'Good' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ prediction.prediction }}
+                                            </span>
+                                        </td>
+                                        <td>{{ prediction.confidence }}%</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ prediction.epa_category[:8] }}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewDetails({{ prediction.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Prediction history pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if predictions.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('history', page=predictions.prev_num) }}">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for page_num in predictions.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != predictions.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('history', page=page_num) }}">{{ page_num }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if predictions.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('history', page=predictions.next_num) }}">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No predictions yet</h5>
+                            <p class="text-muted">Start making predictions to see your history here!</p>
+                            <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Make Your First Prediction
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prediction Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Prediction Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// View prediction details
+function viewDetails(predictionId) {
+    // In a real app, you'd fetch this from server
+    // For now, we'll use data from table
+    const row = document.querySelector('tr:has(button[onclick="viewDetails(' + predictionId + ')"]');
+    if (!row) return;
+    
+    const cells = row.getElementsByTagName('td');
+    const details = '<div class="row">' +
+        '<div class="col-md-6">' +
+            '<h6><i class="fas fa-calendar me-2"></i>Date & Time</h6>' +
+            '<p>' + cells[0].textContent + '</p>' +
+            '<h6><i class="fas fa-tachometer-alt me-2"></i>AQI Value</h6>' +
+            '<p>' + cells[1].innerHTML + '</p>' +
+            '<h6><i class="fas fa-calendar-alt me-2"></i>Month</h6>' +
+            '<p>' + cells[2].textContent + '</p>' +
+            '<h6><i class="fas fa-map-marker-alt me-2"></i>State</h6>' +
+            '<p>' + cells[3].textContent + '</p>' +
+        '</div>' +
+        '<div class="col-md-6">' +
+            '<h6><i class="fas fa-flask me-2"></i>Parameter</h6>' +
+            '<p>' + cells[4].textContent + '</p>' +
+            '<h6><i class="fas fa-cloud-sun me-2"></i>Season</h6>' +
+            '<p>' + cells[5].textContent + '</p>' +
+            '<h6><i class="fas fa-chart-line me-2"></i>Prediction</h6>' +
+            '<p>' + cells[6].innerHTML + '</p>' +
+            '<h6><i class="fas fa-percentage me-2"></i>Confidence</h6>' +
+            '<p>' + cells[7].textContent + '</p>' +
+        '</div>' +
+    '</div>';
+    
+    document.getElementById('modalBody').innerHTML = details;
+    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+}
+
+// Export history
+function exportHistory() {
+    const table = document.getElementById('predictionsTable');
+    if (!table) return;
+    
+    let csv = 'Date,AQI,Month,State,Parameter,Season,Prediction,Confidence,EPA Category\n';
+    
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for (let row of rows) {
+        const cells = row.getElementsByTagName('td');
+        const rowData = [
+            cells[0].textContent,
+            cells[1].textContent.trim(),
+            cells[2].textContent,
+            cells[3].textContent,
+            cells[4].textContent,
+            cells[5].textContent,
+            cells[6].textContent.trim(),
+            cells[7].textContent,
+            cells[8].textContent.trim()
+        ];
+        csv += rowData.join(',') + '\n';
+    }
+    
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'aqi_predictions_history.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Add table sorting
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.getElementById('predictionsTable');
+    if (!table) return;
+    
+    const headers = table.getElementsByTagName('th');
+    for (let i = 0; i < headers.length - 1; i++) { // Skip Actions column
+        headers[i].style.cursor = 'pointer';
+        headers[i].addEventListener('click', () => sortTable(i));
+    }
+});
+
+function sortTable(columnIndex) {
+    const table = document.getElementById('predictionsTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+    
+    rows.sort((a, b) => {
+        const aValue = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+        const bValue = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+        
+        // Try to parse as number for numeric columns
+        const aNum = parseFloat(aValue);
+        const bNum = parseFloat(bValue);
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return aNum - bNum;
+        }
+        
+        return aValue.localeCompare(bValue);
+    });
+    
+    // Clear and re-append sorted rows
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+}
+</script>
+{% endblock %}

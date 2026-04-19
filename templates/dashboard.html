@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AQI Predictor{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-1">
+                                Welcome back, {{ current_user.name }}!
+                            </h2>
+                            <p class="mb-0">Your air quality prediction dashboard</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="badge bg-white text-primary fs-6 p-2">
+                                Active User
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Total Predictions</h6>
+                            <h3 class="mb-0">{{ total_predictions }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">This Month</h6>
+                            <h3 class="mb-0">
+                                {% set monthly_count = current_user.predictions | selectattr('timestamp.month', 'equalto', now.month) | list | length %}
+                                {{ monthly_count if monthly_count else 0 }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Average AQI</h6>
+                            <h3 class="mb-0">
+                                {% if last_prediction %}
+                                    {{ "%.1f"|format(last_prediction.aqi) }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Air Quality Status</h6>
+                            <h3 class="mb-0">
+                                {% if last_prediction %}
+                                    {{ last_prediction.epa_category[:4] }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and Quick Actions -->
+    <div class="row">
+        <!-- Last Prediction -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Last Prediction</h5>
+                </div>
+                <div class="card-body">
+                    {% if last_prediction %}
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="prediction-badge {% if last_prediction.prediction == 'Good' %}good{% else %}not-good{% endif %}">
+                                    {{ last_prediction.prediction }}
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Confidence: {{ last_prediction.confidence }}%</small>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>AQI Value:</strong></td>
+                                        <td>{{ last_prediction.aqi }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>EPA Category:</strong></td>
+                                        <td>
+                                            <span class="badge bg-info">{{ last_prediction.epa_category }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Location:</strong></td>
+                                        <td>{{ last_prediction.state }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td>{{ format_datetime(last_prediction.timestamp) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <h5 class="text-muted">No predictions yet</h5>
+                            <p class="text-muted">Make your first prediction to see it here</p>
+                            <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                                Make Prediction
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                            New Prediction
+                        </a>
+                        <a href="{{ url_for('history') }}" class="btn btn-outline-primary">
+                            View History
+                        </a>
+                        <a href="{{ url_for('analytics') }}" class="btn btn-outline-info">
+                            View Analytics
+                        </a>
+                        <a href="{{ url_for('recommendations') }}" class="btn btn-outline-success">
+                            Health Recommendations
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Need help? Check our documentation
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Activity</h5>
+                    <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if current_user.predictions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>AQI</th>
+                                        <th>Prediction</th>
+                                        <th>Confidence</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prediction in current_user.predictions[:5] %}
+                                    <tr>
+                                        <td>{{ format_datetime(prediction.timestamp) }}</td>
+                                        <td>{{ "%.1f"|format(prediction.aqi) }}</td>
+                                        <td>
+                                            <span class="badge {% if prediction.prediction == 'Good' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ prediction.prediction }}
+                                            </span>
+                                        </td>
+                                        <td>{{ "%.1f"|format(prediction.confidence) }}%</td>
+                                        <td>{{ prediction.state }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ prediction.epa_category[:8] }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <h6 class="text-muted">No recent activity</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh dashboard every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+
+// Add animation to stats cards
+document.addEventListener('DOMContentLoaded', function() {
+    var cards = document.querySelectorAll('.card');
+    cards.forEach(function(card, index) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(function() {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

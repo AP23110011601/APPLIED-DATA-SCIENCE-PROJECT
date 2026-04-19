@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}Predict AQI - AQI Predictor{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Prediction Form -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>AQI Prediction Form
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/predict">
+                        <div class="row">
+                            <!-- AQI Input -->
+                            <div class="col-md-6 mb-3">
+                                <label for="aqi" class="form-label">
+                                    <i class="fas fa-tachometer-alt me-1"></i>AQI Value
+                                </label>
+                                <input type="number" class="form-control" name="aqi" 
+                                       min="0" max="500" value="75" required>
+                                <div class="form-text">Enter AQI value (0-500)</div>
+                            </div>
+
+                            <!-- Month Input -->
+                            <div class="col-md-6 mb-3">
+                                <label for="month" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Month
+                                </label>
+                                <select class="form-select" name="month" required>
+                                    <option value="4" selected>April</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+
+                            <!-- State Dropdown -->
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>State
+                                </label>
+                                <select class="form-select" name="state" required>
+                                    <option value="California" selected>California</option>
+                                    <option value="New York">New York</option>
+                                    <option value="Texas">Texas</option>
+                                </select>
+                            </div>
+
+                            <!-- Pollutant Parameter Dropdown -->
+                            <div class="col-md-6 mb-3">
+                                <label for="parameter" class="form-label">
+                                    <i class="fas fa-flask me-1"></i>Air Pollutant
+                                </label>
+                                <select class="form-select" name="parameter" required>
+                                    <option value="PM2.5" selected>PM2.5</option>
+                                    <option value="Ozone">Ozone</option>
+                                </select>
+                            </div>
+
+                            <!-- Season Dropdown -->
+                            <div class="col-md-12 mb-3">
+                                <label for="season" class="form-label">
+                                    <i class="fas fa-cloud-sun me-1"></i>Season
+                                </label>
+                                <select class="form-select" name="season" required>
+                                    <option value="Spring" selected>Spring</option>
+                                    <option value="Summer">Summer</option>
+                                    <option value="Fall">Fall</option>
+                                    <option value="Winter">Winter</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket me-2"></i>Predict AQI
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- AQI Guide Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>AQI Levels Guide
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-success fs-6 p-2 w-100">0-50</div>
+                            <small>Good</small>
+                        </div>
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-warning fs-6 p-2 w-100">51-100</div>
+                            <small>Moderate</small>
+                        </div>
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-orange fs-6 p-2 w-100">101-150</div>
+                            <small>Unhealthy for Sensitive</small>
+                        </div>
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-danger fs-6 p-2 w-100">151-200</div>
+                            <small>Unhealthy</small>
+                        </div>
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-purple fs-6 p-2 w-100">201-300</div>
+                            <small>Very Unhealthy</small>
+                        </div>
+                        <div class="col-6 col-md-2 mb-2">
+                            <div class="badge bg-dark fs-6 p-2 w-100">301+</div>
+                            <small>Hazardous</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-lg-6 mb-4">
+            {% if prediction_result %}
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Prediction Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Main Prediction -->
+                    <div class="text-center mb-4">
+                        <div class="prediction-badge {% if prediction_result.prediction == 'Good' %}good{% else %}not-good{% endif %}">
+                            <span class="prediction-text">{{ prediction_result.prediction }}</span>
+                        </div>
+                        <div class="confidence-score mt-2">
+                            <strong>Confidence:</strong> {{ prediction_result.confidence }}%
+                        </div>
+                    </div>
+
+                    <!-- EPA Category -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="epa-category">
+                                <strong>EPA Category:</strong> {{ prediction_result.epa_category }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Breakdown -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="probability-item good-prob">
+                                <span class="probability-label">Good:</span>
+                                <span class="probability-value">{{ prediction_result.probability_good }}%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="probability-item not-good-prob">
+                                <span class="probability-label">Not Good:</span>
+                                <span class="probability-value">{{ prediction_result.probability_not_good }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Details -->
+                    <div class="mt-3">
+                        <h6><i class="fas fa-info-circle me-2"></i>Input Details</h6>
+                        <small class="text-muted">
+                            AQI: {{ prediction_result.aqi }}, 
+                            State: {{ prediction_result.state }}, 
+                            Parameter: {{ prediction_result.parameter }}, 
+                            Season: {{ prediction_result.season }}
+                        </small>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Prediction saved to your history!
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-header bg-light text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Prediction Results
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Make a prediction to see results here</h6>
+                    <p class="text-muted">Fill in the form and click "Predict Air Quality"</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tips Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Prediction Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Enter accurate AQI values for better predictions</li>
+                        <li>Consider seasonal variations in air quality</li>
+                        <li>Different pollutants affect air quality differently</li>
+                        <li>Higher AQI values generally indicate worse air quality</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// DOM Elements
+let predictionForm, resultCard, predictionBadge, predictionText, confidenceScore;
+let epaCategoryText, probGood, probNotGood, successMessage;
+let aqiInput, monthSelect, stateSelect, parameterSelect, seasonSelect;
+let isSubmitting = false;
+
+// Initialize DOM elements
+function initializeDOMElements() {
+    predictionForm = document.getElementById('predictionForm');
+    resultCard = document.getElementById('resultCard');
+    predictionBadge = document.getElementById('predictionBadge');
+    predictionText = document.getElementById('predictionText');
+    confidenceScore = document.getElementById('confidenceScore');
+    epaCategoryText = document.getElementById('epaCategoryText');
+    probGood = document.getElementById('probGood');
+    probNotGood = document.getElementById('probNotGood');
+    successMessage = document.getElementById('successMessage');
+    
+    aqiInput = document.getElementById('aqi');
+    monthSelect = document.getElementById('month');
+    stateSelect = document.getElementById('state');
+    parameterSelect = document.getElementById('parameter');
+    seasonSelect = document.getElementById('season');
+    
+    // Check if all required elements exist
+    const formElements = predictionForm && aqiInput && monthSelect && stateSelect && parameterSelect && seasonSelect;
+    const resultElements = resultCard && predictionBadge && predictionText && confidenceScore && epaCategoryText && probGood && probNotGood;
+    
+    console.log('DOM Elements initialized:', {
+        formElements,
+        resultElements,
+        predictionForm: !!predictionForm,
+        aqiInput: !!aqiInput,
+        stateSelect: !!stateSelect,
+        parameterSelect: !!parameterSelect,
+        seasonSelect: !!seasonSelect,
+        resultCard: !!resultCard
+    });
+    
+    return formElements && resultElements;
+}
+
+// Test JavaScript function
+function testJavaScript() {
+    console.log('JavaScript test function called');
+    
+    // Check if user is logged in
+    fetch('/api/test-auth', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        console.log('Auth test response:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Auth test data:', data);
+        alert('JavaScript is working! User logged in: ' + (data.logged_in ? 'Yes' : 'No'));
+    })
+    .catch(error => {
+        console.error('Auth test error:', error);
+        alert('JavaScript error: ' + error.message);
+    });
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - initializing predict page');
+    
+    if (!initializeDOMElements()) {
+        console.error('Required form elements not found');
+        return;
+    }
+    
+    // Set default month to current month
+    const currentMonth = new Date().getMonth() + 1;
+    monthSelect.value = currentMonth;
+    
+    // Add form submit event listener
+    predictionForm.addEventListener('submit', handlePrediction);
+    
+    // Add input validation
+    aqiInput.addEventListener('input', validateAQI);
+    
+    console.log('Predict page initialized successfully');
+});
+
+// Validate AQI input
+function validateAQI() {
+    const value = parseFloat(aqiInput.value);
+    if (value < 0) {
+        aqiInput.value = 0;
+    } else if (value > 500) {
+        aqiInput.value = 500;
+    }
+}
+
+// Handle prediction form submission
+async function handlePrediction(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    isSubmitting = true;
+    showLoading();
+    
+    try {
+        // Get form values with debugging
+        const formData = {
+            aqi: parseFloat(aqiInput.value) || 0,
+            month: parseInt(monthSelect.value) || 1,
+            state: stateSelect.value || '',
+            parameter: parameterSelect.value || '',
+            season: seasonSelect.value || ''
+        };
+        
+        console.log('Form data:', formData);
+        
+        // Validate required fields
+        if (!formData.state || !formData.parameter || !formData.season) {
+            throw new Error('Please fill in all fields');
+        }
+        
+        console.log('Making API call to /api/predict');
+        
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        console.log('API response status:', response.status);
+        
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { error: 'Server error occurred' };
+            }
+            console.error('API error:', errorData);
+            throw new Error(errorData.error || `HTTP ${response.status}: Prediction failed`);
+        }
+        
+        const result = await response.json();
+        console.log('Prediction result:', result);
+        displayResults(result);
+        
+    } catch (error) {
+        console.error('Prediction error:', error);
+        showError(error.message || 'An unexpected error occurred');
+    } finally {
+        hideLoading();
+        isSubmitting = false;
+    }
+}
+
+// Display prediction results
+function displayResults(result) {
+    if (!result || typeof result !== 'object') {
+        showError('Invalid prediction result received');
+        return;
+    }
+    
+    // Update prediction badge
+    const isGood = result.prediction === 'Good';
+    if (predictionBadge && predictionText) {
+        predictionBadge.className = `prediction-badge ${isGood ? 'good' : 'not-good'}`;
+        predictionText.textContent = result.prediction || 'Unknown';
+    }
+    
+    // Update other fields
+    if (confidenceScore) confidenceScore.textContent = result.confidence || '0';
+    if (epaCategoryText) epaCategoryText.textContent = result.epa_category || 'Unknown';
+    if (probGood) probGood.textContent = result.probability_good || '0';
+    if (probNotGood) probNotGood.textContent = result.probability_not_good || '0';
+    
+    // Show result card
+    if (resultCard) {
+        resultCard.style.display = 'block';
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Show success message if saved
+    if (result.saved && successMessage) {
+        successMessage.style.display = 'block';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// Show/hide loading
+function showLoading() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'flex';
+}
+
+function hideLoading() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'none';
+}
+
+// Show error message
+function showError(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+    alertDiv.innerHTML = `
+        <strong>Error!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
